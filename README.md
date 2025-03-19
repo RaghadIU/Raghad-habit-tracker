@@ -17,7 +17,7 @@ The interactive CLI menu makes habit tracking simple and accessible.
 
  How to Install It?
 1) Clone the Repository
-git clone https://github.com/YOUR_USERNAME/habit-tracker.git
+git clone https://github.com/RaghadIU/Raghad-habit-tracker
 cd habit-tracker
 2) Install Python Dependencies
 Make sure you have Python 3.7+ installed. Then, run:
