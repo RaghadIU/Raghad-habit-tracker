@@ -3,26 +3,26 @@ from datetime import datetime
 class Habit:
     def __init__(self, name: str, frequency: str, created_at: str = None):
         """
-        يمثل كلاس العادة التي يمكن للمستخدم إضافتها وتتبعها.
-        :param name: اسم العادة
-        :param frequency: تكرار العادة ('daily' أو 'weekly')
-        :param created_at: تاريخ إنشاء العادة (افتراضيًا هو الوقت الحالي)
+       Class represents the habit that a user can add and track.
+        :param name: Habit Name
+        :param frequency: frequent the habit ('daily' or 'weekly')
+        :param created_at: Custom creation date (by default is current time)
         """
         self.name = name
         self.frequency = frequency
         self.created_at = created_at if created_at else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.streak = 0  # سلسلة النجاحات المتتالية
+        self.streak = 0 # Consecutive success series
 
     def complete_habit(self):
         """
-        يتم استدعاء هذه الدالة عند إكمال العادة، مما يزيد من سلسلة النجاحات.
-        """
+This function is called when the habit is completed, which increases the success chain.
+"""
         self.streak += 1
 
     def reset_streak(self):
-        """
-        إعادة تعيين سلسلة النجاحات عند فشل المستخدم في إكمال العادة في الفترة المحددة.
-        """
+       """
+Reset the success chain when the user fails to complete the habit in the specified period.
+"""
         self.streak = 0
 
     def __repr__(self):
