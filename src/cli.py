@@ -43,8 +43,10 @@ def complete_habit(habit_id):
     """
     Marks a habit as completed for today.
     """
-    db.log_completion(habit_id)
-    click.echo(f"Habit ID {habit_id} marked as completed!")
+    if db.log_completion(habit_id)
+        click.echo(f"Habit ID {habit_id} marked as completed!")
+    else:
+        click.echo(f"Habit ID {habit_id} not found!")
 
 @cli.command()
 def show_analytics():
