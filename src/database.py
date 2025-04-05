@@ -27,6 +27,9 @@ class Database:
         CREATE TABLE IF NOT EXISTS habits (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
+            description TEXT,
+            streak INTEGER DEFAULT 0,
+            completion_dates TEXT DEFAULT '[]',  -- Stored as JSON string
             frequency TEXT CHECK(frequency IN ('daily', 'weekly')) NOT NULL,
             created_at TEXT NOT NULL
         )
@@ -48,6 +51,7 @@ class Database:
         """
         Adds a new habit to the database.
         :param name: Name of the habit.
+        :param description: Description of the habit.
         :param frequency: Frequency of the habit ('daily' or 'weekly').
         """
         conn = self._connect()
@@ -64,9 +68,27 @@ class Database:
         """
         conn = self._connect()
         cursor = conn.cursor()
-        cursor.execute('INSERT INTO habit_logs (habit_id, completed_at) VALUES (?, ?)',
-                       (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-        conn.commit()
+        # Get the habit to update streak and completion_dates
+        cursor.execute('SELECT * FROM habits WHERE id = ?', (habit_id,))
+        habit = cursor.fetchone()
+
+        if habit:
+            streak = habit[4] + 1  # Increment streak
+            completion_dates = json.loads(habit[5])  # Convert string to list
+            completion_dates.append(datetime.now().strftime('%Y-%m-%d'))  # Add today's date
+            completion_dates = json.dumps(completion_dates)  # Convert list back to string
+
+            # Update the habit with the new streak and completion_dates
+            cursor.execute('''
+            UPDATE habits
+            SET streak = ?, completion_dates = ?
+            WHERE id = ?
+            ''', (streak, completion_dates, habit_id))
+
+            # Log the completion
+            cursor.execute('INSERT INTO habit_logs (habit_id, completed_at) VALUES (?, ?)',
+                           (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+            conn.commit()
         conn.close()
     
     def get_habits(self):
