@@ -24,7 +24,8 @@ Make sure you have Python 3.7+ installed. Then, run:
 pip install -r requirements.txt
 3) Load the Database with Test Data (Optional)
 To preload the database with 1 month of test data, run:
-python preload_db.py
+python src/cli.py
+
 
 ---
 
