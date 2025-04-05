@@ -15,13 +15,14 @@ def cli():
 
 @cli.command()
 @click.option('--name', prompt='Habit name', help='The name of the habit')
+@click.option('--description', prompt='Habit description', help='A brief description of the habit')
 @click.option('--frequency', type=click.Choice(['daily', 'weekly']), prompt='Frequency (daily/weekly)', help='The frequency of the habit')
 def add_habit(name, frequency):
     """
     Adds a new habit to the database.
     """
     db.add_habit(name, frequency)
-    click.echo(f"Habit '{name}' added successfully!")
+    click.echo(f"Habit '{name}' added successfully with description '{description}'!")
 
 @cli.command()
 def list_habits():
