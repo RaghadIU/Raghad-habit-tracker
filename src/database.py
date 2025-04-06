@@ -115,3 +115,17 @@ class Database:
         logs = cursor.fetchall()
         conn.close()
         return logs
+
+    def delete_habit(self, habit_id: int):
+        """
+        Deletes a habit and all its associated logs from the database.
+        :param habit_id: ID of the habit to be deleted.
+        """
+        conn = self._connect()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM habit_logs WHERE habit_id = ?', (habit_id,))
+        cursor.execute('DELETE FROM habits WHERE id = ?', (habit_id,))
+    
+        conn.commit()
+        conn.close()
+
