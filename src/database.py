@@ -88,35 +88,9 @@ class Database:
             # Log the completion (no completion date storage)
             cursor.execute('INSERT INTO habit_logs (habit_id, completed_at) VALUES (?, ?)',
                          (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
-            conn.commit()
+        conn.commit()
         conn.close()
         
-    
-    def get_habits(self):
-        """
-        Retrieves all habits from the database.
-        :return: List of habits.
-        """
-        conn = self._connect()
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM habits')
-        habits = cursor.fetchall()
-        conn.close()
-        return habits
-    
-    def get_habit_logs(self, habit_id: int):
-        """
-        Retrieves all logs for a specific habit.
-        :param habit_id: ID of the habit.
-        :return: List of log entries.
-        """
-        conn = self._connect()
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM habit_logs WHERE habit_id = ?', (habit_id,))
-        logs = cursor.fetchall()
-        conn.close()
-        return logs
-
     def delete_habit(self, habit_id: int):
         """
         Deletes a habit and all its associated logs from the database.
