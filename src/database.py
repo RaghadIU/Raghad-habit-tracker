@@ -61,35 +61,36 @@ class Database:
         conn.commit()
         conn.close()
 
-    def log_completion(self, habit_id: int):
+    def complete_habit(self, habit_id: int):
         """
-        Logs the completion of a habit.
+        Logs the completion of a habit without storing completion dates.
         :param habit_id: ID of the habit being completed.
         """
         conn = self._connect()
         cursor = conn.cursor()
-        # Get the habit to update streak and completion_dates
+        # Get the habit to update streak
         cursor.execute('SELECT * FROM habits WHERE id = ?', (habit_id,))
         habit = cursor.fetchone()
 
         if habit:
-            streak = habit[4] + 1  # Increment streak
-            completion_dates = json.loads(habit[5])  # Convert string to list
-            completion_dates.append(datetime.now().strftime('%Y-%m-%d'))  # Add today's date
-            completion_dates = json.dumps(completion_dates)  # Convert list back to string
+            try:
+                streak = int(habit[4]) + 1  # Increment streak
+            except ValueError:  # If value is invalid, reset to 0
+                streak = 0
 
-            # Update the habit with the new streak and completion_dates
+            # Update the habit with the new streak (no completion dates)
             cursor.execute('''
             UPDATE habits
-            SET streak = ?, completion_dates = ?
+            SET streak = ?
             WHERE id = ?
-            ''', (streak, completion_dates, habit_id))
+            ''', (streak, habit_id))
 
-            # Log the completion
+            # Log the completion (no completion date storage)
             cursor.execute('INSERT INTO habit_logs (habit_id, completed_at) VALUES (?, ?)',
-                           (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                         (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
             conn.commit()
         conn.close()
+        
     
     def get_habits(self):
         """
