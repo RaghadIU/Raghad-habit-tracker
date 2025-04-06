@@ -1,47 +1,72 @@
-import unittest
-from analytics import Analytics
-from database import Database
+import os  
+import pytest
+import sqlite3
+from src.analytics import Analytics
+from datetime import datetime, timedelta
 
-class TestAnalytics(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        """
-        Initialize the database and analytics module for testing.
-        """
-        cls.db = Database(db_path=':memory:')  # Use in-memory database for testing
-        cls.analytics = Analytics(db_path=':memory:')
-        cls.db.add_habit("Exercise", "daily")
-        cls.db.add_habit("Reading", "weekly")
-        
-        # Log some completions
-        cls.db.log_completion(1)
-        cls.db.log_completion(1)
-        cls.db.log_completion(2)
+@pytest.fixture
+def test_db_with_data(tmp_path):
+    """Fixture with test data for analytics."""
+    db_path = tmp_path / "analytics.db"
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
     
-    def test_get_longest_streak(self):
-        """
-        Test retrieving the longest streak.
-        """
-        longest_streak = self.analytics.get_longest_streak()
-        self.assertEqual(longest_streak[0], "Exercise")  # Exercise should have the longest streak
+    # Create tables
+    cursor.execute('''
+    CREATE TABLE habits (
+        id INTEGER PRIMARY KEY,
+        name TEXT,
+        description TEXT,
+        frequency TEXT,
+        streak INTEGER,
+        complete_habit TEXT,
+        created_at TEXT
+    )''')
     
-    def test_get_habits_by_frequency(self):
-        """
-        Test retrieving habits by frequency.
-        """
-        daily_habits = self.analytics.get_habits_by_frequency("daily")
-        weekly_habits = self.analytics.get_habits_by_frequency("weekly")
-        
-        self.assertEqual(len(daily_habits), 1)
-        self.assertEqual(len(weekly_habits), 1)
+    cursor.execute('''
+    CREATE TABLE habit_logs (
+        id INTEGER PRIMARY KEY,
+        habit_id INTEGER,
+        completed_at TEXT
+    )''')
     
-    def test_get_most_missed_habit(self):
-        """
-        Test retrieving the most missed habit.
-        """
-        most_missed = self.analytics.get_most_missed_habit()
-        self.assertEqual(most_missed[0], "Reading")  # Reading has the least completions
+    # Insert test data
+    cursor.execute('''
+    INSERT INTO habits VALUES 
+        (1, 'Exercise', 'Daily workout', 'daily', 5, '[]', '2023-01-01'),
+        (2, 'Read', 'Weekly reading', 'weekly', 2, '[]', '2023-01-01')
+    ''')
+    
+    # Add completion logs
+    dates = [
+        (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d %H:%M:%S")
+        for i in range(5)
+    ]
+    for date in dates:
+        cursor.execute('INSERT INTO habit_logs (habit_id, completed_at) VALUES (1, ?)', (date,))
+    
+    conn.commit()
+    conn.close()
+    
+    yield db_path
+    os.unlink(db_path)
 
-if __name__ == "__main__":
-    unittest.main()
+def test_longest_streak(test_db_with_data):
+    """Test getting the longest streak."""
+    analytics = Analytics(test_db_with_data)
+    name, streak = analytics.get_longest_streak()
+    assert name == "Exercise"
+    assert streak == 5
 
+def test_most_missed_habit(test_db_with_data):
+    """Test identifying most missed habit."""
+    analytics = Analytics(test_db_with_data)
+    name, missed = analytics.get_most_missed_habit()
+    assert name == "Read"
+    assert missed == 0
+
+def test_calculate_streak(test_db_with_data):
+    """Test streak calculation."""
+    analytics = Analytics(test_db_with_data)
+    streak = analytics.calculate_streak("Exercise")
+    assert streak == 5
