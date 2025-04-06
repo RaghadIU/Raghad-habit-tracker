@@ -74,7 +74,7 @@ class Database:
 
         if habit:
             try:
-                streak = int(habit[4]) + 1  # Increment streak
+                streak = int(habit_id) + 1  # Increment streak
             except ValueError:  # If value is invalid, reset to 0
                 streak = 0
 
