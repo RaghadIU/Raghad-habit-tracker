@@ -29,7 +29,7 @@ class Database:
             name TEXT NOT NULL,
             description TEXT,
             streak INTEGER DEFAULT 0,
-            completion_dates TEXT DEFAULT '[]',  -- Stored as JSON string
+            complete_habit TEXT DEFAULT '[]',  -- Stored as JSON string
             frequency TEXT CHECK(frequency IN ('daily', 'weekly')) NOT NULL,
             created_at TEXT NOT NULL
         )
