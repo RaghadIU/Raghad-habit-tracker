@@ -1,24 +1,36 @@
-import unittest
+import pytest
+import sqlite3
+import os
+from src.database import Database
 from datetime import datetime
-from habits.database import Database
-from habits.habit import Habit
 
+@pytest.fixture
+def test_db(tmp_path):
+    """Fixture to create a test database."""
+    db_path = tmp_path / "test.db"
+    db = Database(db_path)
+    db.create_tables()
+    yield db
+    db._connect().close()
+    os.unlink(db_path)
 
-class TestDatabase(unittest.TestCase):
-    def setUp(self):
-        self.db = Database(":memory:")
-        self.habit = Habit("Test Habit", "daily")
+def test_add_habit(test_db):
+    """Test adding a habit to the database."""
+    test_db.add_habit("Exercise", "Daily workout", "daily")
+    habits = test_db.get_habits()
+    assert len(habits) == 1
+    assert habits[0][1] == "Exercise"  # name is second column
 
-    def test_add_habit(self):
-        self.db.add_habit(self.habit)
-        habits = self.db.get_habits()
-        self.assertEqual(len(habits), 1)
+def test_complete_habit(test_db):
+    """Test completing a habit."""
+    test_db.add_habit("Read", "Daily reading", "daily")
+    test_db.complete_habit(1)
+    logs = test_db.get_habit_logs(1)
+    assert len(logs) == 1
+    assert datetime.now().strftime("%Y-%m-%d") in logs[0][2]  # completed_at is third column
 
-    def test_add_completion(self):
-        self.db.add_habit(self.habit)
-        self.db.add_completion(1, datetime.now())
-        # You can add more assertions here to test the completions table.
-
-
-if __name__ == "__main__":
-    unittest.main()
+def test_delete_habit(test_db):
+    """Test deleting a habit."""
+    test_db.add_habit("Temp", "Test habit", "daily")
+    test_db.delete_habit(1)
+    assert len(test_db.get_habits()) == 0
