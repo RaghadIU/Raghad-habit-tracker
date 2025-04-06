@@ -61,6 +61,15 @@ def show_analytics():
     click.echo(f"Longest Streak: {longest_streak[0]} ({longest_streak[1]} days)")
     click.echo(f"Most Missed Habit: {most_missed[0]} ({most_missed[1]} completions)")
 
+@cli.command()
+@click.option('--habit_id', type=int, prompt='Habit ID', help='ID of the habit to delete')
+def delete_habit(habit_id):
+    """
+    Deletes a habit from the database.
+    """
+    db.delete_habit(habit_id)  
+    click.echo(f"Habit ID {habit_id} deleted successfully!")
+
 if __name__ == '__main__':
     cli()
 
