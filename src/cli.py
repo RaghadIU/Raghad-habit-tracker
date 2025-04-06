@@ -44,10 +44,8 @@ def complete_habit(habit_id):
     """
     Marks a habit as completed for today.
     """
-    if db.log_completion(habit_id)
-        click.echo(f"Habit ID {habit_id} marked as completed!")
-    else:
-        click.echo(f"Habit ID {habit_id} not found!")
+    db.complete_habit(habit_id)
+    click.echo(f"Habit ID {habit_id} marked as completed!")
 
 @cli.command()
 def show_analytics():
@@ -56,10 +54,12 @@ def show_analytics():
     """
     longest_streak = analytics.get_longest_streak()
     most_missed = analytics.get_most_missed_habit()
+    avg_streak = analytics.average_streak()
     
     click.echo("\nHabit Analytics:")
     click.echo(f"Longest Streak: {longest_streak[0]} ({longest_streak[1]} days)")
     click.echo(f"Most Missed Habit: {most_missed[0]} ({most_missed[1]} completions)")
+    click.echo(f"Average Streak: {avg_streak:.2f} days")
 
 @cli.command()
 @click.option('--habit_id', type=int, prompt='Habit ID', help='ID of the habit to delete')
@@ -69,6 +69,15 @@ def delete_habit(habit_id):
     """
     db.delete_habit(habit_id)  
     click.echo(f"Habit ID {habit_id} deleted successfully!")
+
+@cli.command()
+@click.option('--habit_name', prompt='Habit name', help='Name of the habit to check the streak for')
+def streak_for_habit(habit_name):
+    """
+    Displays the current streak for a given habit.
+    """
+    streak = analytics.calculate_streak(habit_name)
+    click.echo(f"The current streak for {habit_name} is {streak} days.")
 
 if __name__ == '__main__':
     cli()
