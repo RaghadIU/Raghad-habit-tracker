@@ -46,4 +46,5 @@ Reset the success chain when the user fails to complete the habit in the specifi
         self.streak = 0
 
     def __repr__(self):
-        return f"Habit(id={self.id}, name={self.name}, description={self.description}, frequency={self.frequency}, created_at={self.created_at}, streak={self.streak}, completion_dates={self.completion_dates})"
+        return f"Habit(id={self.id}, name={self.name}, description={self.description}, frequency={self.frequency}, created_at={self.created_at}, streak={self.streak}, completion_dates={self.completion_dates})
+)"
