@@ -41,34 +41,34 @@ Navigate the CLI and select:
 Follow the prompts to enter the habit name and frequency.
 1) Add a habit (name, description, frequency)
 ```bash
-python src/cli.py add-habit
+python main.py add-habit
 ```
 
 2) View All Habits
 ```bash
-python src/cli.py list-habits
+python main.py list-habits
 ```
 Lists all tracked habits with their details.
 
 3) Mark a Habit as Completed
 ```bash
-python src/cli.py complete-habit --habit_id 1
+python main.py complete-habit --habit_id 1
 ```
 Marks the habit with ID `1` as completed.
 
 4) View Analytics
 ```bash
-python src/cli.py show-analytics
+python main.py show-analytics
 ```
 Displays the longest streak and most missed habit and average streak.
 
 5) show longest streak
 ```bash
-python src/cli.py longest-streak
+python main.py longest-streak
 ```
 6) delete habit
 ```bash
-python src/cli.py delete-habit --habit_id 1
+python main.py delete-habit --habit_id 1
 ```
 ---
 
