@@ -98,6 +98,9 @@ class Database:
             # Log the completion (no completion date storage)
             cursor.execute('''INSERT INTO habit_logs (habit_id, completed_at) VALUES (?, ?)
             ''', (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        else:
+            print(f"Habit with ID {habit_id} not found.") 
+        
         conn.commit()
         conn.close()
 
