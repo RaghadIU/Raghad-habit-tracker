@@ -17,8 +17,12 @@ The interactive CLI menu makes habit tracking simple and accessible.
 
 ## How to Install It?
 1) Clone the Repository
+```bash
 git clone https://github.com/RaghadIU/Raghad-habit-tracker
+```
+```bash
 cd Raghad-habit-tracker
+```
 2) Create and activate a virtual environment
 ```bash
 python -m venv venv
