@@ -39,11 +39,6 @@ class Habit:
                 self.completion_dates.append(weekday)
                 self.streak += 1
 
-    def reset_streak(self):
-       """
-Reset the success chain when the user fails to complete the habit in the specified period.
-"""
-        self.streak = 0
 
     def __repr__(self):
         return f"Habit(id={self.id}, name={self.name}, description={self.description}, frequency={self.frequency}, created_at={self.created_at}, streak={self.streak}, completion_dates={self.completion_dates})
