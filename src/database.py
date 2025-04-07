@@ -86,8 +86,8 @@ class Database:
             ''', (streak, habit_id))
 
             # Log the completion (no completion date storage)
-            cursor.execute('INSERT INTO habit_logs (habit_id, completed_at) VALUES (?, ?)',
-                         (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+            cursor.execute('''INSERT INTO habit_logs (habit_id, completed_at) VALUES (?, ?)
+            ''', (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
         conn.commit()
         conn.close()
 
