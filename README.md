@@ -22,12 +22,10 @@ cd habit-tracker
 2) Install Python Dependencies
 Make sure you have Python 3.7+ installed. Then, run:
 pip install -r requirements.txt
-3) To start the app, run:
-    ```bash
+3) To start the app, run:   
+```bash
 python src/cli.py 
 ```
-
-
 
 ---
 
