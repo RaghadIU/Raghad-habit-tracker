@@ -83,10 +83,10 @@ class Database:
         habit = cursor.fetchone()
 
         if habit:
-            try:
-                streak = int(habit_id) + 1  # Increment streak
-            except ValueError:  # If value is invalid, reset to 0
-                streak = 0
+            current_streak = habit[0]  # Get the current streak value
+
+            # Increment the streak by 1
+            streak = current_streak + 1
 
             # Update the habit with the new streak (no completion dates)
             cursor.execute('''
