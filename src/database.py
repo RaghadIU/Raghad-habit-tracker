@@ -42,6 +42,8 @@ class Database:
         columns = [col[1] for col in cursor.fetchall()]
         if 'description' not in columns:
             cursor.execute("ALTER TABLE habits ADD COLUMN description TEXT")
+        if 'streak' not in columns:
+            cursor.execute("ALTER TABLE habits ADD COLUMN streak INTEGER DEFAULT 0")
 
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS habit_logs (
