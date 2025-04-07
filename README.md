@@ -18,11 +18,19 @@ The interactive CLI menu makes habit tracking simple and accessible.
 ## How to Install It?
 1) Clone the Repository
 git clone https://github.com/RaghadIU/Raghad-habit-tracker
-cd habit-tracker
-2) Install Python Dependencies
+cd Raghad-habit-tracker
+2) Create and activate a virtual environment
+```bash
+python -m venv venv
+```
+```bash
+.\venv\Scripts\activate
+```
+ش
+3) Install Python Dependencies
 Make sure you have Python 3.7+ installed. Then, run:
 pip install -r requirements.txt
-3) To start the app, run:   
+4) To start the app, run:   
 ```bash
 python main.py
 ```
