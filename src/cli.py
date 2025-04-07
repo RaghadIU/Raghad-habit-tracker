@@ -1,6 +1,6 @@
 import click
-from database import Database
-from analytics import Analytics
+from src.database import Database
+from src.analytics import Analytics
 
 # Initialize database and analytics
 db = Database()
