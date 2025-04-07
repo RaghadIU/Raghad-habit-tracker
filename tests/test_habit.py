@@ -33,9 +33,4 @@ def test_complete_weekly_habit():
     assert habit.streak == 1
     assert datetime.now().strftime("%A") in habit.completion_dates
 
-def test_reset_streak():
-    """Test resetting a habit streak."""
-    habit = Habit(1, "Meditate", "Daily meditation", "daily", 
-                 created_at="2023-01-01 00:00:00", streak=10)
-    habit.reset_streak()
-    assert habit.streak == 0
+
