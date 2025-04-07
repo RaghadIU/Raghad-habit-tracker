@@ -2,8 +2,11 @@
  from datetime import datetime
  from src.habit import Habit
  
- def test_habit_initialization():
- @@ -10,27 +10,25 @@ def test_habit_initialization():
+def test_habit_initialization():
+     """Test Habit initialization with all parameters."""
+     habit = Habit(
+         id=1,
+         name="Exercise",
          description="Daily workout",
          frequency="daily",
          created_at="2023-01-01 00:00:00",
