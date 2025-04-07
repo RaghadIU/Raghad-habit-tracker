@@ -52,52 +52,54 @@ class Analytics:
 
     def calculate_streak(self, habit_name):
         """
-        Calculates the current streak for a given habit.
+        Calculates the current streak for a given habit using habit_logs.
         :param habit_name: Name of the habit.
-        :return: The streak count for the habit.
+        :return: The longest streak count for the habit.
+        """
+        conn = self._connect()
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            SELECT completed_at FROM habit_logs 
+            WHERE habit_id = (SELECT id FROM habits WHERE name = ?)
+            ORDER BY completed_at ASC
+        ''', (habit_name,))
+        dates = cursor.fetchall()
+        conn.close()
+        
+        if not dates:
+            return 0
+
+        completion_dates = [datetime.strptime(row[0].split()[0], '%Y-%m-%d') for row in dates]
+        
+        streak = 1
+        max_streak = 1
+
+        for i in range(1, len(completion_dates)):
+            if (completion_dates[i] - completion_dates[i - 1]) == timedelta(days=1):
+                streak += 1
+                max_streak = max(max_streak, streak)
+            else:
+                streak = 1
+        
+        return max_streak
+
+   def get_habits_completion(self):
+        """
+        Retrieves habits and their number of completions.
+        :return: List of habits and their completion counts.
         """
         conn = self._connect()
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT completion_dates FROM habits WHERE name = ?
-        ''', (habit_name,))
-        result = cursor.fetchone()
-        conn.close()
-        
-        if result:
-            completion_dates = result[0].split(',')
-            streak = 0
-            max_streak = 0
-            prev_date = None
-
-            for date in completion_dates:
-                # Check if the completion dates are consecutive
-                if prev_date is None or (self._is_consecutive(prev_date, date)):
-                    streak += 1
-                    max_streak = max(max_streak, streak)
-                else:
-                    streak = 1  # Reset streak for non-consecutive dates
-                prev_date = date
-            return max_streak
-        return 0
-    
-    def get_habits_completion(self):
-        """
-        Retrieves habits and their completion status.
-        :return: List of habits and their completion statuses.
-        """
-        conn = self._connect()
-        cursor = conn.cursor()
-        cursor.execute('SELECT name, completion_dates FROM habits')
+            SELECT habits.name, COUNT(habit_logs.id) as completions 
+            FROM habits 
+            LEFT JOIN habit_logs ON habits.id = habit_logs.habit_id 
+            GROUP BY habits.id
+        ''')
         habits = cursor.fetchall()
         conn.close()
-
-        habits_status = []
-        for habit in habits:
-            name, completion_dates = habit
-            completed = len(completion_dates.split(','))
-            habits_status.append((name, completed))
-        return habits_status
+        return habits
     
     def average_streak(self):
         """
