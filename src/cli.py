@@ -17,11 +17,12 @@ def cli():
 @click.option('--name', prompt='Habit name', help='The name of the habit')
 @click.option('--description', prompt='Habit description', help='A brief description of the habit')
 @click.option('--frequency', type=click.Choice(['daily', 'weekly']), prompt='Frequency (daily/weekly)', help='The frequency of the habit')
-def add_habit(name, frequency):
+
+def add_habit(name, description, frequency):
     """
     Adds a new habit to the database.
     """
-    db.add_habit(name, frequency)
+    db.add_habit(name, description, frequency)
     click.echo(f"Habit '{name}' added successfully with description '{description}'!")
 
 @cli.command()
@@ -55,6 +56,7 @@ def longest_streak():
     longest_streak = analytics.get_longest_streak()
     click.echo(f"Longest Streak: {longest_streak[0]} ({longest_streak[1]} days)")
 
+
 @cli.command()
 def show_analytics():
     """
@@ -68,25 +70,3 @@ def show_analytics():
     click.echo(f"Longest Streak: {longest_streak[0]} ({longest_streak[1]} days)")
     click.echo(f"Most Missed Habit: {most_missed[0]} ({most_missed[1]} completions)")
     click.echo(f"Average Streak: {avg_streak:.2f} days")
-
-@cli.command()
-@click.option('--habit_id', type=int, prompt='Habit ID', help='ID of the habit to delete')
-def delete_habit(habit_id):
-    """
-    Deletes a habit from the database.
-    """
-    db.delete_habit(habit_id)  
-    click.echo(f"Habit ID {habit_id} deleted successfully!")
-
-@cli.command()
-@click.option('--habit_name', prompt='Habit name', help='Name of the habit to check the streak for')
-def streak_for_habit(habit_name):
-    """
-    Displays the current streak for a given habit.
-    """
-    streak = analytics.calculate_streak(habit_name)
-    click.echo(f"The current streak for {habit_name} is {streak} days.")
-
-if __name__ == '__main__':
-    cli()
-
