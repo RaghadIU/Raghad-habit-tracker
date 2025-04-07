@@ -48,6 +48,14 @@ def complete_habit(habit_id):
     click.echo(f"Habit ID {habit_id} marked as completed!")
 
 @cli.command()
+def longest_streak():
+    """
+    Displays the longest streak across all habits.
+    """
+    longest_streak = analytics.get_longest_streak()
+    click.echo(f"Longest Streak: {longest_streak[0]} ({longest_streak[1]} days)")
+
+@cli.command()
 def show_analytics():
     """
     Displays analytics about habit tracking.
