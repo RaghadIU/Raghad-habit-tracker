@@ -38,17 +38,23 @@ class Database:
         conn.commit()
         conn.close()
 
-    def add_habit(self, name: str, description: str, frequency: str):
+    def add_habit(self, name: str, description : str, frequency: str ):
+        """
+        Adds a new habit to the database.
+        :param name: Name of the habit.
+        :param description: Description of the habit.
+        :param frequency: Frequency of the habit ('daily' or 'weekly').
+        """
         if frequency not in ['daily', 'weekly']:
             raise ValueError("Frequency must be 'daily' or 'weekly'")
 
         conn = self._connect()
         cursor = conn.cursor()
-        cursor.execute('''INSERT INTO habits (name, description, frequency, created_at) VALUES (?, ?, ?, ?)''',
-                       (name, description, frequency, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        cursor.execute('''INSERT INTO habits (name, description, frequency, created_at ) VALUES (?, ?, ?, ?)''',
+        (name, description, frequency, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
         conn.commit()
         conn.close()
-
+        
     def complete_habit(self, habit_id: int):
         conn = self._connect()
         cursor = conn.cursor()
