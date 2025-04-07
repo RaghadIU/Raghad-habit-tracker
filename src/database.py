@@ -21,22 +21,28 @@ class Database:
     def _create_tables(self):
         """
         Creates necessary tables if they do not already exist.
+        Also ensures all required columns exist (e.g., 'description').
         """
         conn = self._connect()
         cursor = conn.cursor()
-        
+
+         # Create 'habits' table if it doesn't exist
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS habits (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            description TEXT,
-            frequency TEXT CHECK(frequency IN ('daily', 'weekly')) NOT NULL,
-            streak INTEGER DEFAULT 0,
-            complete_habit TEXT DEFAULT '[]',  -- Stored as JSON string
-            created_at TEXT NOT NULL
-        )
+           id INTEGER PRIMARY KEY AUTOINCREMENT,
+           name TEXT NOT NULL,
+           frequency TEXT CHECK(frequency IN ('daily', 'weekly')) NOT NULL,
+           streak INTEGER DEFAULT 0,
+           complete_habit TEXT DEFAULT '[]',
+           created_at TEXT NOT NULL
+        ) 
         ''')
-        
+
+        cursor.execute("PRAGMA table_info(habits)")
+        columns = [col[1] for col in cursor.fetchall()]
+        if 'description' not in columns:
+            cursor.execute("ALTER TABLE habits ADD COLUMN description TEXT")
+
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS habit_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,7 +51,7 @@ class Database:
             FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE
         )
         ''')
-        
+
         conn.commit()
         conn.close()
 
