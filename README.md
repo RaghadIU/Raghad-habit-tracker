@@ -28,7 +28,7 @@ cd Raghad-habit-tracker
 python -m venv venv
 ```
 ```bash
-.\venv\Scripts\activate
+venv\Scripts\activate
 ```
 3) Install Python Dependencies 
 Make sure you have Python 3.7+ installed. Then, run:
