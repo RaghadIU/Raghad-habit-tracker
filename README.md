@@ -26,10 +26,11 @@ python -m venv venv
 ```bash
 .\venv\Scripts\activate
 ```
-ش
-3) Install Python Dependencies
+3)Install Python Dependencies 
 Make sure you have Python 3.7+ installed. Then, run:
+```bash
 pip install -r requirements.txt
+```
 4) To start the app, run:   
 ```bash
 python main.py
