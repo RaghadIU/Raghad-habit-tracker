@@ -3,7 +3,7 @@ from typing import List
 
 
 class Habit:
-    def __init__(self, id: int, name: str, description: str, frequency: str, created_at: str, streak: int = 0, completion_dates: List[str] = None):
+    def __init__(self, id: int, name: str, description: str, frequency: str, created_at: str, streak: int = 0,):
         """
         Represents a habit that the user wants to track.
 
@@ -13,7 +13,7 @@ class Habit:
         :param description: Optional description of the habit
         :param created_at: Creation date of the habit (default: current time)
         :param streak: Consecutive success count
-        :param completion_dates: List of dates when habit was marked completed
+
         """
         self.id = id
         self.name = name
@@ -21,7 +21,7 @@ class Habit:
         self.description = description
         self.created_at =created_at if created_at else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.streak = streak
-        self.completion_dates = completion_dates if completion_dates else[]
+        
 
     def complete_habit(self):
         """
@@ -29,17 +29,15 @@ class Habit:
         """
         today = datetime.now().strftime("%Y-%m-%d")
 
-       # Handle daily habit completion
+        # Handle daily habit completion
         if self.frequency == "daily":
-            if today not in self.completion_dates:
-                self.completion_dates.append(today)
-                self.streak += 1
+            self.streak += 1  # Just increase the streak for daily completion
+        
         elif self.frequency == "weekly":
             # Handle weekly habit completion (only update streak once per week)
             weekday = datetime.now().strftime("%A")  # Get the current weekday
-            if weekday not in self.completion_dates:
-                self.completion_dates.append(weekday)
-                self.streak += 1
+            self.streak += 1  # Increase streak for weekly habit completion
+
                 
     def __repr__(self):
-        return f"Habit(id={self.id}, name={self.name}, frequency={self.frequency}, description={self.description}, created_at={self.created_at}, streak={self.streak}, completion_dates={self.completion_dates})"
+        return f"Habit(id={self.id}, name={self.name}, frequency={self.frequency}, description={self.description}, created_at={self.created_at}, streak={self.streak},)"

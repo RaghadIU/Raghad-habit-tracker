@@ -17,26 +17,37 @@ class Database:
         Establishes a connection to the database.
         """
         return sqlite3.connect(self.db_path)
-
+    
     def _create_tables(self):
         """
         Creates necessary tables if they do not already exist.
+        Also ensures all required columns exist (e.g., 'description').
         """
         conn = self._connect()
         cursor = conn.cursor()
-        
+
+         # Create 'habits' table if it doesn't exist
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS habits (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            description TEXT,
-            frequency TEXT CHECK(frequency IN ('daily', 'weekly')) NOT NULL,
-            streak INTEGER DEFAULT 0,
-            complete_habit TEXT DEFAULT '[]',  -- Stored as JSON string
-            created_at TEXT NOT NULL
-        )
+           id INTEGER PRIMARY KEY AUTOINCREMENT,
+           name TEXT NOT NULL,
+           frequency TEXT CHECK(frequency IN ('daily', 'weekly')) NOT NULL,
+           streak INTEGER DEFAULT 0,
+           complete_habit TEXT DEFAULT '[]',
+           created_at TEXT NOT NULL
+        ) 
         ''')
-        
+
+         # Check if 'description' column exists
+        cursor.execute("PRAGMA table_info(habits)")
+        columns = [col[1] for col in cursor.fetchall()]
+        if 'description' not in columns:
+            cursor.execute("ALTER TABLE habits ADD COLUMN description TEXT")
+
+        if 'streak' not in columns:
+            cursor.execute("ALTER TABLE habits ADD COLUMN streak INTEGER DEFAULT 0")
+
+         # Create 'habit_logs' table if it doesn't exist
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS habit_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,7 +56,7 @@ class Database:
             FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE
         )
         ''')
-        
+
         conn.commit()
         conn.close()
 
@@ -77,10 +88,10 @@ class Database:
         habit = cursor.fetchone()
 
         if habit:
-            try:
-                streak = int(habit_id) + 1  # Increment streak
-            except ValueError:  # If value is invalid, reset to 0
-                streak = 0
+            current_streak = habit[0]  # Get the current streak value
+
+            # Increment the streak by 1
+            streak = current_streak + 1
 
             # Update the habit with the new streak (no completion dates)
             cursor.execute('''
@@ -92,6 +103,8 @@ class Database:
             # Log the completion (no completion date storage)
             cursor.execute('''INSERT INTO habit_logs (habit_id, completed_at) VALUES (?, ?)
             ''', (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        else:
+            print(f"Habit with ID {habit_id} not found.") 
         conn.commit()
         conn.close()
 
