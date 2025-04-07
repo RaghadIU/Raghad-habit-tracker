@@ -84,7 +84,7 @@ class Analytics:
         
         return max_streak
 
-   def get_habits_completion(self):
+    def get_habits_completion(self):
         """
         Retrieves habits and their number of completions.
         :return: List of habits and their completion counts.
