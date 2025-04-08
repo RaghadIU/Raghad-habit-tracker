@@ -127,11 +127,6 @@ python -m pytest tests/ -v
 - test_add_habit
 - test_complete_habit 
 - test_delete_habit 
-- test_habit_initialization
-- test_complete_daily_habit 
-- test_complete_weekly_habit 
-- test_reset_streak
-
 ---
 
 ## Future Enhancements
