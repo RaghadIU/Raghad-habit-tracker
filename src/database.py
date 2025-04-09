@@ -87,7 +87,7 @@ class Database:
         habit = cursor.fetchone()
 
         if habit:
-            current_streak = habit[0] 
+            current_streak = habit[3] 
             streak = current_streak + 1
 
            
