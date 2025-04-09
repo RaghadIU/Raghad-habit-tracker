@@ -56,38 +56,18 @@ class Analytics:
     
     def calculate_streak(self, habit_name):
         """
-        Calculates the current streak for a given habit using habit_logs.
-        :param habit_name: Name of the habit.
-        :return: The longest streak count for the habit.
+        Calculates the streak for a specific habit.
+        :param habit_name: The name of the habit.
+        :return: Streak count for the given habit.
         """
         conn = self._connect()
         cursor = conn.cursor()
-
         cursor.execute('''
-            SELECT completed_at FROM habit_logs 
-            WHERE habit_id = (SELECT id FROM habits WHERE name = ?)
-            ORDER BY completed_at ASC
+            SELECT streak FROM habits WHERE name = ?
         ''', (habit_name,))
-        dates = cursor.fetchall()
+        result = cursor.fetchone()
         conn.close()
-        
-        if not dates:
-            return 0
-
-        completion_dates = [datetime.strptime(row[0].split()[0], '%Y-%m-%d') for row in dates]
-        
-        streak = 1
-        max_streak = 1
-
-        for i in range(1, len(completion_dates)):
-            if (completion_dates[i] - completion_dates[i - 1]) == timedelta(days=1):
-                streak += 1
-                max_streak = max(max_streak, streak)
-            else:
-                streak = 1
-        
-        return max_streak
-
+        return result[0] if result else 0
     
     def get_habits_completion(self):
         """
