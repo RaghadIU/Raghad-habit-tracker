@@ -140,7 +140,6 @@ class Database:
         cursor = conn.cursor()
 
         
-        cursor.execute('DELETE FROM habit_logs WHERE habit_id = ?', (habit_id,))
         cursor.execute('DELETE FROM habits WHERE id = ?', (habit_id,))
     
         conn.commit()
