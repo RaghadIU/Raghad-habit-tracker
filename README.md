@@ -123,7 +123,8 @@ python -m pytest tests/ -v
 ## Tests verify:
 - test_longest_streak
 - test_most_missed_habit 
-- test_calculate_streak 
+- test_list_habits 
+- test_average_streak 
 - test_add_habit
 - test_complete_habit 
 - test_delete_habit 
