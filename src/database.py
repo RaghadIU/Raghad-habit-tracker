@@ -16,7 +16,7 @@ class Database:
         """
         Establishes a connection to the database.
         """
-        conn.sqlite3.connect(self.db_path)
+        conn = sqlite3.connect(self.db_path)
         conn.execute("PRAGMA foreign_keys = ON")
         return conn
 
@@ -88,8 +88,6 @@ class Database:
 
         if habit:
             current_streak = habit[0] 
-
-            
             streak = current_streak + 1
 
            
