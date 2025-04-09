@@ -17,6 +17,8 @@ class Database:
         Establishes a connection to the database.
         """
         return sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA foreign_keys = ON")
+        return conn
 
     def _create_tables(self):
         """
