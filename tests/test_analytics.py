@@ -3,6 +3,7 @@ import pytest
 import sqlite3
 from src.analytics import Analytics
 from datetime import datetime, timedelta
+from src.database import Database
 
 @pytest.fixture
 def test_db_with_data(tmp_path):
@@ -30,14 +31,14 @@ def test_db_with_data(tmp_path):
         completed_at TEXT
     )''')
     
-    # Insert test data
+
     cursor.execute('''
     INSERT INTO habits VALUES 
         (1, 'Exercise', 'Daily workout', 'daily', 5, '[]', '2023-01-01'),
         (2, 'Read', 'Weekly reading', 'weekly', 2, '[]', '2023-01-01')
     ''')
     
-    # Add completion logs
+    
     dates = [
         (datetime.now() - timedelta(days=i)).strftime("%Y-%m-%d %H:%M:%S")
         for i in range(5)
@@ -65,8 +66,35 @@ def test_most_missed_habit(test_db_with_data):
     assert name == "Read"
     assert missed == 0
 
-def test_calculate_streak(test_db_with_data):
-    """Test streak calculation."""
+def test_list_habits():
+    db = Database("data/test.db")
+    db.create_tables()
+    
+    with db._connect() as conn:
+        conn.execute("DELETE FROM habits")
+
+    
+    db.add_habit("Read", "Read for 30 mins", "daily")        
+    db.add_habit("Workout", "Gym session", "weekly")
+
+    habits = db.get_habits()
+
+    assert len(habits) == 2
+    assert habits[0][1] == "Read"
+    assert habits[1][1] == "Workout"
+
+def test_average_streak(test_db_with_data):
+    """Test calculating the average streak."""
     analytics = Analytics(test_db_with_data)
-    streak = analytics.calculate_streak("Exercise")
-    assert streak == 5
+    
+    # Update streaks for testing
+    conn = sqlite3.connect(test_db_with_data)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE habits SET streak = 5 WHERE name = 'Read'")
+    cursor.execute("UPDATE habits SET streak = 3 WHERE name = 'Exercise'")
+    conn.commit()
+    conn.close()
+
+    # Get average streak using Analytics
+    avg = analytics.average_streak()
+    assert avg == 4  # (5 + 3) / 2
