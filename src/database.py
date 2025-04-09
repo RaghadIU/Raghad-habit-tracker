@@ -16,7 +16,7 @@ class Database:
         """
         Establishes a connection to the database.
         """
-        return sqlite3.connect(self.db_path)
+        conn.sqlite3.connect(self.db_path)
         conn.execute("PRAGMA foreign_keys = ON")
         return conn
 
@@ -87,19 +87,19 @@ class Database:
         habit = cursor.fetchone()
 
         if habit:
-            current_streak = habit[0]  # Get the current streak value
+            current_streak = habit[0] 
 
-            # Increment the streak by 1
+            
             streak = current_streak + 1
 
-            # Update the habit with the new streak (no completion dates)
+           
             cursor.execute('''
             UPDATE habits
             SET streak = ?
             WHERE id = ?
             ''', (streak, habit_id))
 
-            # Log the completion (no completion date storage)
+        
             cursor.execute('''INSERT INTO habit_logs (habit_id, completed_at) VALUES (?, ?)
             ''', (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
         else:
@@ -141,10 +141,8 @@ class Database:
         conn = self._connect()
         cursor = conn.cursor()
 
-        # Delete the logs associated with the habit first (optional, depends on foreign key constraints)
+        
         cursor.execute('DELETE FROM habit_logs WHERE habit_id = ?', (habit_id,))
-
-        # Then delete the habit
         cursor.execute('DELETE FROM habits WHERE id = ?', (habit_id,))
     
         conn.commit()
