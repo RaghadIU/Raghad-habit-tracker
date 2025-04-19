@@ -1,73 +1,92 @@
-Habit Tracker App
+# Habit Tracker App 
 
 Introducing the Habit Tracker App, developed as part of the Object-Oriented and Functional Programming with Python course at IU International University of Applied Sciences.
 
 ---
 
-What is habit tracker application?
+## What is habit tracker application? 
 This application is a Command Line Interface (CLI) tool programmed in Python to help users track and maintain habits effectively. It allows users to:
--  Create, complete, reset, and delete habits.
--  Monitor progress and analyze habit completion.
+-  Create, complete, and delete habits.
+-  Monitor progress and show analytics (longest streak, most missed habit, Average streak).
 -  Track daily and weekly habits.
--  View insights such as longest streaks and completion trends.
+-  View insights such as longest streaks alone without use show analytics.
 
 The interactive CLI menu makes habit tracking simple and accessible.
 
 ---
 
- How to Install It?
+## How to Install It?
 1) Clone the Repository
+```bash
 git clone https://github.com/RaghadIU/Raghad-habit-tracker
-cd habit-tracker
-2) Install Python Dependencies
+```
+```bash
+cd Raghad-habit-tracker
+```
+2) Create and activate a virtual environment
+```bash
+python -m venv venv
+```
+```bash
+venv\Scripts\activate
+```
+3) Install Python Dependencies 
 Make sure you have Python 3.7+ installed. Then, run:
+```bash
 pip install -r requirements.txt
-3) Load the Database with Test Data (Optional)
-To preload the database with 1 month of test data, run:
-python preload_db.py
+```
+4) To start the app, run:   
+```bash
+python main.py
+```
 
 ---
 
- How to use the application 
+## How to use the application 
  Run the Application
 python src/cli.py
-Navigate the CLI using arrow keys and select:
+Navigate the CLI and select:
 - Create a New Habit: Add a habit with a description and frequency (Daily/Weekly).
-- Increment Habit: Mark a habit as completed for the current period.
-- Reset Habit: Reset the progress of a habit to zero.
-- Analyse Habits: View tracking data, streaks, and performance insights.
+- Increment Habit: Mark a habit as completed by using its ID for the current period.
+- Analyse Habits: View tracking habits, streaks, and performance insights.
 - Delete Habit: Remove a habit from tracking.
-- Exit: Close the application.
-
+  
 Follow the prompts to enter the habit name and frequency.
-1) Add a habit 
+1) Add a habit (name, description, frequency)
 ```bash
-python src/cli.py add-habit
+python main.py add-habit
 ```
 
 2) View All Habits
 ```bash
-python src/cli.py list-habits
+python main.py list-habits
 ```
 Lists all tracked habits with their details.
 
 3) Mark a Habit as Completed
 ```bash
-python src/cli.py complete-habit --habit_id 1
+python main.py complete-habit --habit_id 1
 ```
 Marks the habit with ID `1` as completed.
 
 4) View Analytics
 ```bash
-python src/cli.py show-analytics
+python main.py show-analytics
 ```
-Displays the longest streak and most missed habit.
+Displays the longest streak and most missed habit and average streak.
 
+5) show longest streak
+```bash
+python main.py longest-streak
+```
+6) delete habit
+```bash
+python main.py delete-habit --habit_id 1
+```
 ---
 
-The features of the application:
-- Create and manage habits with descriptions.  
-- Preloaded test data for immediate use.  
+## The features of the application:
+- Create and manage habits with descriptions and frequency.   
 - Track streaks and analyze progress trends.  
 - Interactive CLI for smooth navigation.  
 - Filter habits by frequency (Daily/Weekly).
@@ -75,19 +94,18 @@ The features of the application:
 
 ---
 
- Habit Analysis Options
+## Habit Analysis Options
 | Feature | Description |
 |---------|------------|
 | List all habits | Displays all currently tracked habits. |
-| List habits by periodicity | Filters habits as daily or weekly. |
 | Longest streak of all habits | Shows the longest streak achieved overall. |
-| Longest streak for a habit | Shows the longest streak for a specific habit. |
-| Completion Rate Analysis | Calculates habit success percentage. |
+| Compelet a habit  | complete a habit bt using its ID. |
+| most missed habit | by using show analytics |
 
 ---
 
- Example Habits (Preloaded Data)
-When using preload_db.py, the following test habits are added:
+## Example Habits 
+When using python src/cli.py, the following test habits are added:
 - study (Daily)
 - Read (Daily)
 - Exercise (Daily)
@@ -95,28 +113,26 @@ When using preload_db.py, the following test habits are added:
 
 ---
 
- Running Tests
+## Running Tests
 To validate functionality, automated tests are available:
 pytest
 For detailed test results:
-pytest -v
-Tests verify:
-- Habit creation, completion, and deletion.
-- Streak tracking and reset functionality.
-- Database operations and analytics calculations.
-
+```bash
+python -m pytest tests/ -v
+```
+## Tests verify:
+- test_longest_streak
+- test_most_missed_habit 
+- test_list_habits 
+- test_average_streak 
+- test_add_habit
+- test_complete_habit 
+- test_delete_habit 
 ---
 
-Future Enhancements
+## Future Enhancements
 Graphical User Interface (GUI) using Tkinter or React.  
 Mobile App Integration to track habits on the go.  
  Automated Habit Reminders & Notifications.  
 
 ---
- License
-This project is licensed under the MIT License.
-
----
-
- Contact
-For any issues, reach out via GitHub issues or email: your-email@example.com.
