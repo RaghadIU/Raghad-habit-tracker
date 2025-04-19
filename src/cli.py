@@ -1,6 +1,7 @@
 import click
 from src.database import Database
 from src.analytics import Analytics
+import json
 
 # Initialize database and analytics
 db = Database()
@@ -17,7 +18,6 @@ def cli():
 @click.option('--name', prompt='Habit name', help='The name of the habit')
 @click.option('--description', prompt='Habit description', help='A brief description of the habit')
 @click.option('--frequency', type=click.Choice(['daily', 'weekly']), prompt='Frequency (daily/weekly)', help='The frequency of the habit')
-
 def add_habit(name, description, frequency):
     """
     Adds a new habit to the database.
@@ -34,10 +34,13 @@ def list_habits():
     if not habits:
         click.echo("No habits found.")
         return
-    
+
     click.echo("\nTracked Habits:")
     for habit in habits:
-        click.echo(f"ID: {habit[0]}, Name: {habit[1]}, Frequency: {habit[2]}, Created At: {habit[3]}")
+        completion_dates = json.loads(habit[6]) if habit[6] else []
+        click.echo(f"ID: {habit[0]}, Name: {habit[1]}, Frequency: {habit[3]}, Created At: {habit[4]}")
+        click.echo(f"  → Description: {habit[2]}")
+        click.echo(f"  → Streak: {habit[5]}, Completed Dates: {completion_dates}")
 
 @cli.command()
 @click.option('--habit_id', type=int, prompt='Habit ID', help='ID of the habit to mark as completed')
@@ -54,8 +57,10 @@ def longest_streak():
     Displays the longest streak across all habits.
     """
     longest_streak = analytics.get_longest_streak()
-    click.echo(f"Longest Streak: {longest_streak[0]} ({longest_streak[1]} days)")
-
+    if longest_streak:
+        click.echo(f"Longest Streak: {longest_streak[0]} ({longest_streak[1]} days)")
+    else:
+        click.echo("No data available for longest streak.")
 
 @cli.command()
 def show_analytics():
@@ -65,11 +70,23 @@ def show_analytics():
     longest_streak = analytics.get_longest_streak()
     most_missed = analytics.get_most_missed_habit()
     avg_streak = analytics.average_streak()
-    
+
     click.echo("\nHabit Analytics:")
-    click.echo(f"Longest Streak: {longest_streak[0]} ({longest_streak[1]} days)")
-    click.echo(f"Most Missed Habit: {most_missed[0]} ({most_missed[1]} completions)")
-    click.echo(f"Average Streak: {avg_streak:.2f} days")
+
+    if longest_streak:
+        click.echo(f"Longest Streak: {longest_streak[0]} ({longest_streak[1]} days)")
+    else:
+        click.echo("Longest Streak: No data")
+
+    if most_missed:
+        click.echo(f"Most Missed Habit: {most_missed[0]} ({most_missed[1]} missed)")
+    else:
+        click.echo("Most Missed Habit: No data")
+
+    if avg_streak is not None:
+        click.echo(f"Average Streak: {avg_streak:.2f} days")
+    else:
+        click.echo("Average Streak: No data")
 
 @cli.command()
 @click.option('--habit_id', type=int, prompt='Habit ID', help='ID of the habit to delete')
@@ -77,7 +94,7 @@ def delete_habit(habit_id):
     """
     Deletes a habit from the database.
     """
-    db.delete_habit(habit_id)  
+    db.delete_habit(habit_id)
     click.echo(f"Habit ID {habit_id} deleted successfully!")
 
 @cli.command()
@@ -89,5 +106,20 @@ def streak_for_habit(habit_name):
     streak = analytics.calculate_streak(habit_name)
     click.echo(f"The current streak for {habit_name} is {streak} days.")
 
+# Optional: preload sample data
+@cli.command()
+def preload_data():
+    """
+    Loads sample habits into the database for demo/testing.
+    """
+    sample_habits = [
+        ("Drink Water", "Drink 8 glasses of water", "daily"),
+        ("Exercise", "30 minutes workout", "daily"),
+        ("Read Book", "Read 10 pages", "daily")
+    ]
+    for name, desc, freq in sample_habits:
+        db.add_habit(name, desc, freq)
+    click.echo("Sample habits loaded successfully.")
+
 if __name__ == '__main__':
-        cli() 
+    cli()

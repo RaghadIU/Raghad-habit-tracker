@@ -4,50 +4,40 @@ import json
 
 class Database:
     def __init__(self, db_path='data/habits.db'):
-        """
-        Initializes the database connection and ensures tables are created.
-        :param db_path: Path to the SQLite database file.
-        """
         self.db_path = db_path 
         self._create_tables()
-          
 
     def _connect(self):
-        """
-        Establishes a connection to the database.
-        """
-        return sqlite3.connect(self.db_path)
-    
+        conn = sqlite3.connect(self.db_path)
+        conn.execute("PRAGMA foreign_keys = ON")
+        return conn
+
     def _create_tables(self):
-        """
-        Creates necessary tables if they do not already exist.
-        Also ensures all required columns exist (e.g., 'description').
-        """
         conn = self._connect()
         cursor = conn.cursor()
 
-         # Create 'habits' table if it doesn't exist
+        # Create 'habits' table
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS habits (
            id INTEGER PRIMARY KEY AUTOINCREMENT,
            name TEXT NOT NULL,
            frequency TEXT CHECK(frequency IN ('daily', 'weekly')) NOT NULL,
            streak INTEGER DEFAULT 0,
-           complete_habit TEXT DEFAULT '[]',
+           completion_dates TEXT DEFAULT '[]',
            created_at TEXT NOT NULL
         ) 
         ''')
 
-         # Check if 'description' column exists
         cursor.execute("PRAGMA table_info(habits)")
         columns = [col[1] for col in cursor.fetchall()]
         if 'description' not in columns:
             cursor.execute("ALTER TABLE habits ADD COLUMN description TEXT")
-
+        if 'completion_dates' not in columns:
+            cursor.execute("ALTER TABLE habits ADD COLUMN completion_dates TEXT DEFAULT '[]'")
         if 'streak' not in columns:
             cursor.execute("ALTER TABLE habits ADD COLUMN streak INTEGER DEFAULT 0")
 
-         # Create 'habit_logs' table if it doesn't exist
+        # Create logs table (optional, still useful)
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS habit_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,96 +50,77 @@ class Database:
         conn.commit()
         conn.close()
 
-    def add_habit(self, name: str, description : str, frequency: str ):
-        """
-        Adds a new habit to the database.
-        :param name: Name of the habit.
-        :param description: Description of the habit.
-        :param frequency: Frequency of the habit ('daily' or 'weekly').
-        """
+    def add_habit(self, name: str, description: str, frequency: str):
         if frequency not in ['daily', 'weekly']:
             raise ValueError("Frequency must be 'daily' or 'weekly'")
 
         conn = self._connect()
         cursor = conn.cursor()
-        cursor.execute('''INSERT INTO habits (name, description, frequency, created_at ) VALUES (?, ?, ?, ?)''',
-        (name, description, frequency, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+        cursor.execute('''
+        INSERT INTO habits (name, description, frequency, created_at, completion_dates, streak)
+        VALUES (?, ?, ?, ?, ?, ?)
+        ''', (name, description, frequency, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), json.dumps([]), 0))
         conn.commit()
         conn.close()
 
     def complete_habit(self, habit_id: int):
-        """
-        Logs the completion of a habit without storing completion dates.
-        :param habit_id: ID of the habit being completed.
-        """
+        today = datetime.now().strftime('%Y-%m-%d')
         conn = self._connect()
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM habits WHERE id = ?', (habit_id,))
-        habit = cursor.fetchone()
 
-        if habit:
-            current_streak = habit[0]  # Get the current streak value
+        cursor.execute('SELECT completion_dates, streak FROM habits WHERE id = ?', (habit_id,))
+        row = cursor.fetchone()
 
-            # Increment the streak by 1
-            streak = current_streak + 1
+        if row:
+            dates_json, current_streak = row
+            completion_dates = json.loads(dates_json) if dates_json else []
 
-            # Update the habit with the new streak (no completion dates)
-            cursor.execute('''
-            UPDATE habits
-            SET streak = ?
-            WHERE id = ?
-            ''', (streak, habit_id))
+            if today in completion_dates:
+                print("Habit already completed today.")
+            else:
+                completion_dates.append(today)
+                new_streak = current_streak + 1
 
-            # Log the completion (no completion date storage)
-            cursor.execute('''INSERT INTO habit_logs (habit_id, completed_at) VALUES (?, ?)
-            ''', (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+                cursor.execute('''
+                UPDATE habits
+                SET completion_dates = ?, streak = ?
+                WHERE id = ?
+                ''', (json.dumps(completion_dates), new_streak, habit_id))
+
+                cursor.execute('''
+                INSERT INTO habit_logs (habit_id, completed_at)
+                VALUES (?, ?)
+                ''', (habit_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
+
         else:
             print(f"Habit with ID {habit_id} not found.") 
+
         conn.commit()
         conn.close()
 
     def get_habits(self):
-         """
-         Retrieves all habits from the database.
-         :return: List of habits.
-         """
-         conn = self._connect()
-         cursor = conn.cursor()
-         cursor.execute('SELECT * FROM habits')
-         habits = cursor.fetchall()
-         conn.close()
-         return habits
-     
-    def get_habit_logs(self, habit_id: int):
-         """
-         Retrieves all logs for a specific habit.
-         :param habit_id: ID of the habit.
-         :return: List of log entries.
-         """
-         conn = self._connect()
-         cursor = conn.cursor()
-         cursor.execute('SELECT * FROM habit_logs WHERE habit_id = ?', (habit_id,))
-         logs = cursor.fetchall()
-         conn.close()
-         return logs
-
-    def delete_habit(self, habit_id: int):
-        """
-        Deletes a habit and all its associated logs from the database.
-        :param habit_id: ID of the habit to be deleted.
-        """
         conn = self._connect()
         cursor = conn.cursor()
+        cursor.execute('SELECT id, name, description, frequency, created_at, streak, completion_dates FROM habits')
+        habits = cursor.fetchall()
+        conn.close()
+        return habits
+     
+    def get_habit_logs(self, habit_id: int):
+        conn = self._connect()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM habit_logs WHERE habit_id = ?', (habit_id,))
+        logs = cursor.fetchall()
+        conn.close()
+        return logs
 
-        # Delete the logs associated with the habit first (optional, depends on foreign key constraints)
-        cursor.execute('DELETE FROM habit_logs WHERE habit_id = ?', (habit_id,))
-
-        # Then delete the habit
+    def delete_habit(self, habit_id: int):
+        conn = self._connect()
+        cursor = conn.cursor()
         cursor.execute('DELETE FROM habits WHERE id = ?', (habit_id,))
-    
         conn.commit()
         conn.close()
 
     def create_tables(self):
-       """Public method to create tables for testing."""
-       self._create_tables()
+        """Public method to create tables for testing."""
+        self._create_tables()
