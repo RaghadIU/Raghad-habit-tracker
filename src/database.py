@@ -24,7 +24,8 @@ class Database:
            frequency TEXT CHECK(frequency IN ('daily', 'weekly')) NOT NULL,
            streak INTEGER DEFAULT 0,
            completion_dates TEXT DEFAULT '[]',
-           created_at TEXT NOT NULL
+           created_at TEXT NOT NULL,
+           FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE           
         ) 
         ''')
 
@@ -115,11 +116,17 @@ class Database:
         return logs
 
     def delete_habit(self, habit_id: int):
+        """
+        Deletes a habit and its logs using ON DELETE CASCADE.
+        """
         conn = self._connect()
         cursor = conn.cursor()
+
         cursor.execute('DELETE FROM habits WHERE id = ?', (habit_id,))
+    
         conn.commit()
         conn.close()
+
 
     def create_tables(self):
         """Public method to create tables for testing."""
