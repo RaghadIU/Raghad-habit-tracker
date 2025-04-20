@@ -1,5 +1,4 @@
 import sqlite3
-import json
 from datetime import datetime, timedelta
 
 class Analytics:
@@ -9,116 +8,108 @@ class Analytics:
     def _connect(self):
         return sqlite3.connect(self.db_path)
 
-    def _calculate_longest_streak(self, completion_dates):
-        """
-        Helper function to calculate the longest streak from a list of dates.
-        :param completion_dates: List of completion dates as strings.
-        :return: Longest consecutive streak.
-        """
-        dates = sorted([datetime.strptime(date, "%Y-%m-%d") for date in completion_dates])
-        if not dates:
-            return 0
-
-        longest = current = 1
-        for i in range(1, len(dates)):
-            if dates[i] - dates[i - 1] == timedelta(days=1):
-                current += 1
-                longest = max(longest, current)
-            else:
-                current = 1
-        return longest
-
     def get_longest_streak(self):
         """
-        Retrieves the habit with the longest streak based on recorded dates.
-        :return: (habit_name, longest_streak)
+        Retrieves the habit with the longest streak based on continuous dates in habit_logs.
         """
         conn = self._connect()
         cursor = conn.cursor()
-        cursor.execute("SELECT name, completion_dates FROM habits")
+
+        cursor.execute("SELECT id, name FROM habits")
         habits = cursor.fetchall()
+        max_streak = 0
+        max_habit = None
+
+        for habit_id, habit_name in habits:
+            cursor.execute("SELECT completed_at FROM habit_logs WHERE habit_id = ? ORDER BY completed_at", (habit_id,))
+            dates = [datetime.strptime(row[0][:10], "%Y-%m-%d") for row in cursor.fetchall()]
+        
+            streak = 1
+            longest = 1
+            for i in range(1, len(dates)):
+                if (dates[i] - dates[i - 1]).days == 1:
+                    streak += 1
+                    longest = max(longest, streak)
+                else:
+                    streak = 1
+        
+            if longest > max_streak:
+                max_streak = longest
+                max_habit = habit_name
+
         conn.close()
-
-        longest_streak = 0
-        longest_habit = None
-
-        for name, dates_json in habits:
-            dates = json.loads(dates_json) if dates_json else []
-            streak = self._calculate_longest_streak(dates)
-            if streak > longest_streak:
-                longest_streak = streak
-                longest_habit = name
-
-        return (longest_habit, longest_streak) if longest_habit else (None, 0)
+        return (max_habit, max_streak) if max_habit else (None, 0)
 
     def get_most_missed_habit(self):
         """
-        Finds the habit with the least completions (i.e., most missed).
-        :return: (habit_name, completion_count)
+        Identifies the habit with the most missed completions based on 28 days (4 weeks).
+        Only checks daily habits.
         """
         conn = self._connect()
         cursor = conn.cursor()
-        cursor.execute("SELECT name, completion_dates FROM habits")
+
+        cursor.execute("SELECT id, name FROM habits WHERE frequency = 'daily'")
         habits = cursor.fetchall()
+        
+        max_missed = 0
+        missed_habit = None
+
+        for habit_id, habit_name in habits:
+            cursor.execute("SELECT COUNT(*) FROM habit_logs WHERE habit_id = ?", (habit_id,))
+            completed = cursor.fetchone()[0]
+            missed = 28 - completed
+
+            if missed > max_missed:
+                max_missed = missed
+                missed_habit = habit_name
+
         conn.close()
-
-        if not habits:
-            return (None, 0)
-
-        most_missed = habits[0][0]
-        fewest = len(json.loads(habits[0][1]) if habits[0][1] else [])
-
-        for name, dates_json in habits[1:]:
-            dates = json.loads(dates_json) if dates_json else []
-            if len(dates) < fewest:
-                fewest = len(dates)
-                most_missed = name
-
-        return (most_missed, fewest)
-
-    def calculate_streak(self, habit_name):
-        """
-        Calculates the streak (total completions) for a specific habit.
-        :param habit_name: The name of the habit.
-        :return: Streak count (total completions).
-        """
-        conn = self._connect()
-        cursor = conn.cursor()
-        cursor.execute("SELECT completion_dates FROM habits WHERE name = ?", (habit_name,))
-        result = cursor.fetchone()
-        conn.close()
-
-        if result and result[0]:
-            completion_dates = json.loads(result[0])
-            return len(completion_dates)
-        return 0
+        return (missed_habit, max_missed) if missed_habit else (None, 0)
 
     def average_streak(self):
         """
-        Calculates the average number of completions across all habits.
-        :return: Average completion count.
+        Calculates the average number of completions (over 28 days) across all habits.
         """
         conn = self._connect()
         cursor = conn.cursor()
-        cursor.execute("SELECT completion_dates FROM habits")
+
+        cursor.execute("SELECT id FROM habits")
         habits = cursor.fetchall()
+        
+        total_streaks = 0
+        total_habits = 0
+
+        for (habit_id,) in habits:
+            cursor.execute("SELECT COUNT(*) FROM habit_logs WHERE habit_id = ?", (habit_id,))
+            count = cursor.fetchone()[0]
+            total_streaks += count
+            total_habits += 1
+
         conn.close()
+        return total_streaks / total_habits if total_habits > 0 else 0
 
-        total = 0
-        count = 0
+    def calculate_streak(self, habit_name):
+        """
+        Calculates total completions for a specific habit from habit_logs.
+        """
+        conn = self._connect()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM habits WHERE name = ?", (habit_name,))
+        result = cursor.fetchone()
 
-        for dates_json in habits:
-            if dates_json[0]:
-                dates = json.loads(dates_json[0])
-                total += len(dates)
-                count += 1
+        if result:
+            habit_id = result[0]
+            cursor.execute("SELECT COUNT(*) FROM habit_logs WHERE habit_id = ?", (habit_id,))
+            count = cursor.fetchone()[0]
+        else:
+            count = 0
 
-        return total / count if count > 0 else 0
+        conn.close()
+        return count
 
     def delete_habit(self, habit_name):
         """
         Deletes a habit by its name.
-        :param habit_name: Name of the habit to delete.
         """
         conn = self._connect()
         cursor = conn.cursor()

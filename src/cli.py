@@ -121,5 +121,37 @@ def preload_data():
         db.add_habit(name, desc, freq)
     click.echo("Sample habits loaded successfully.")
 
+@cli.command()
+def preload_4weeks():
+    """
+    Preloads 4 weeks of habit completion data for testing analytics.
+    """
+    from datetime import datetime, timedelta
+
+    habits = db.get_habits()
+    if not habits:
+        click.echo("No habits found to populate. Please add habits first.")
+        return
+
+    today = datetime.now()
+
+    for habit in habits:
+        habit_id = habit[0]
+        
+        for days_ago in range(28):
+            date = today - timedelta(days=days_ago)
+            formatted = date.strftime('%Y-%m-%d %H:%M:%S')
+
+            conn = db._connect()
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO habit_logs (habit_id, completed_at) VALUES (?, ?)
+            ''', (habit_id, formatted))
+            conn.commit()
+            conn.close()
+
+    click.echo("Preloaded 4 weeks of completion data for all habits.")
+
+
 if __name__ == '__main__':
     cli()
