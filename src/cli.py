@@ -28,7 +28,7 @@ def add_habit(name, description, frequency):
 @cli.command()
 def list_habits():
     """
-    Lists all habits in the database.
+    Lists all habits in the database, including completion history.
     """
     habits = db.get_habits()
     if not habits:
@@ -37,10 +37,21 @@ def list_habits():
 
     click.echo("\nTracked Habits:")
     for habit in habits:
-        completion_dates = json.loads(habit[6]) if habit[6] else []
-        click.echo(f"ID: {habit[0]}, Name: {habit[1]}, Frequency: {habit[3]}, Created At: {habit[4]}")
-        click.echo(f"  → Description: {habit[2]}")
-        click.echo(f"  → Streak: {habit[5]}, Completed Dates: {completion_dates}")
+        habit_id = habit[0]
+        name = habit[1]
+        frequency = habit[2]
+        description = habit[3]
+        created_at = habit[4]
+        streak = habit[5]
+
+        # Get completion dates from habit_logs
+        logs = db.get_habit_logs(habit_id)
+        completion_dates = [log[2][:10] for log in logs]  # Extract date only (YYYY-MM-DD)
+
+        click.echo(f"ID: {habit_id}, Name: {name}, Frequency: {frequency}, Created At: {created_at}")
+        click.echo(f"  → Description: {description}")
+        click.echo(f"  → Streak: {streak}, Completed Dates: {completion_dates}")
+
 
 @cli.command()
 @click.option('--habit_id', type=int, prompt='Habit ID', help='ID of the habit to mark as completed')
