@@ -85,6 +85,16 @@ python main.py delete-habit --habit_id 1
 ```
 ---
 
+## Example Habits 
+The app automatically adds 3 example habits if no data is found:
+- Drink Water (Daily)
+- Exercise (Daily)
+- Read Book (Daily)
+```bash
+python main.py preload-4weeks
+```
+---
+
 ## The features of the application:
 - Create and manage habits with descriptions and frequency.   
 - Track streaks and analyze progress trends.  
@@ -104,15 +114,6 @@ python main.py delete-habit --habit_id 1
 
 ---
 
-## Example Habits 
-When using python src/cli.py, the following test habits are added:
-- study (Daily)
-- Read (Daily)
-- Exercise (Daily)
-- Laundry (Weekly)
-
----
-
 ## Running Tests
 To validate functionality, automated tests are available:
 pytest
@@ -120,6 +121,7 @@ For detailed test results:
 ```bash
 python -m pytest tests/ -v
 ```
+
 ## Tests verify:
 - test_longest_streak
 - test_most_missed_habit 
